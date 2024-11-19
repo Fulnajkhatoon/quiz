@@ -1,160 +1,153 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:quiz/score.dart';
+import 'package:http/http.dart' as http;
 
 class QuestionScreen extends StatefulWidget {
-  const QuestionScreen({super.key});
+  final int setid; // Pass the quiz set ID to the screen
+
+  const QuestionScreen({Key? key, required this.setid}) : super(key: key);
 
   @override
   _QuestionScreenState createState() => _QuestionScreenState();
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  int score = 0; // Track score
-  int currentQuestionIndex = 0; // Track current question
-  int? selectedAnswerIndex; // Track selected answer index
-  List<String> questions = [
-    'What is a widget in flutter?',
-    // Add more questions as needed
-  ];
-  List<List<String>> options = [
-    [
-      'A building block of the user interface',
-      'A programming language',
-      'A UI framework',
-      'None of the above'
-    ],
-  ];
-  List<bool> correctAnswers = [true, false, false, false]; // Correct answers
+  List<Map<String, dynamic>> questions = [];
+  int currentQuestionIndex = 0;
+  int? selectedOptionId;
+  bool isOptionSelected = false;
+  int score = 0;
 
-  void _selectAnswer(int index) {
-    setState(() {
-      selectedAnswerIndex = index; // Update selected answer index
-    });
+  @override
+  void initState() {
+    super.initState();
+    fetchQuestions(widget.setid); // Fetch questions when the screen loads
   }
 
-  void _submitQuiz() {
-    if (selectedAnswerIndex != null) {
-      if (correctAnswers[selectedAnswerIndex!]) {
-        score++; // Increment score if the answer is correct
-      }
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ScoreScreen(score: score)),
-      );
+  // Fetch questions and options from the API
+  Future<void> fetchQuestions(int setid) async {
+    final response = await http.get(Uri.parse('http://192.168.32.182:3000/questions/$setid'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> questionData = json.decode(response.body);
+      setState(() {
+        questions = questionData.map((q) {
+          return {
+            'questionid': q['questionid'],
+            'question_text': q['question_text'],
+            'options': q['options']
+          };
+        }).toList();
+      });
     } else {
-      // Show a message if no answer is selected
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select an answer')),
-      );
+      setState(() {
+        questions = []; // If no data is fetched, set questions as empty
+      });
     }
+  }
+
+  // Function to calculate the score
+  void submitAnswer() {
+    setState(() {
+      if (selectedOptionId != null) {
+        // Check if selected option is correct
+        final currentQuestion = questions[currentQuestionIndex];
+        final selectedOption = currentQuestion['options'].firstWhere(
+            (option) => option['optionid'] == selectedOptionId);
+
+        if (selectedOption['is_correct']) {
+          score++; // Increment score if answer is correct
+        }
+        isOptionSelected = false; // Reset option selected status
+        selectedOptionId = null; // Reset selected option
+        if (currentQuestionIndex < questions.length - 1) {
+          currentQuestionIndex++; // Move to the next question
+        } else {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text("Quiz Completed"),
+              content: Text("Your score is $score/${questions.length}"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("OK"),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (questions.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Quiz"),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final currentQuestion = questions[currentQuestionIndex];
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Center(
-          child: Text(
-            'Questions',
-            style: TextStyle(color: Colors.black, fontSize: 22),
-          ),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.person, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
+        title: Text("Quiz"),
       ),
-      backgroundColor: Colors.grey[200],
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              Text(
-                'Question ${currentQuestionIndex + 1}',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.pink[600],
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                questions[currentQuestionIndex],
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              SizedBox(height: 40),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: options[currentQuestionIndex].length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: _buildAnswerOption(
-                        options[currentQuestionIndex][index],
-                        index,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle next button action (if needed)
-                    },
-                    child: Text('Next'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              currentQuestion['question_text'],
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ...currentQuestion['options'].map<Widget>((option) {
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedOptionId = option['optionid'];
+                    isOptionSelected = true;
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(12),
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    color: selectedOptionId == option['optionid']
+                        ? Colors.blueAccent
+                        : Colors.white,
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  ElevatedButton(
-                    onPressed: _submitQuiz,
-                    child: Text('Submit'),
+                  child: Text(
+                    option['option_text'],
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: selectedOptionId == option['optionid']
+                          ? Colors.white
+                          : Colors.black,
+                    ),
                   ),
-                ],
+                ),
+              );
+            }).toList(),
+            SizedBox(height: 20),
+            if (isOptionSelected)
+              ElevatedButton(
+                onPressed: submitAnswer,
+                child: Text("Submit"),
               ),
-            ],
-          ),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAnswerOption(String text, int index) {
-    bool isSelected = selectedAnswerIndex == index;
-    return ElevatedButton(
-      onPressed: () {
-        _selectAnswer(index);
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.green : Colors.white,
-        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        textStyle: TextStyle(fontSize: 18),
-        minimumSize: Size(double.infinity, 0), // Full width button
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: Colors.pink[200]!, width: 1),
-        ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(color: Colors.black),
       ),
     );
   }

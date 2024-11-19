@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:quiz/image.dart';
-import 'package:quiz/quizset.dart'; // Import SetScreen here
+import 'package:quiz/quizset.dart';
+import 'package:quiz/updateprofile.dart'; // Import the QuizSetScreen
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -25,7 +25,13 @@ class DashboardScreen extends StatelessWidget {
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.person, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PersonScreen(email: '',)),
+                );
+            },
           ),
         ],
       ),
@@ -36,55 +42,54 @@ class DashboardScreen extends StatelessWidget {
           crossAxisSpacing: 20.0,
           mainAxisSpacing: 20.0,
           children: <Widget>[
-            // Flutter Button
             SkillButton(
-              icon: Image.asset(
-                book,
-                height: 100.0,
-                width: 100.0,
-              ),
               label: 'Flutter',
               onTap: () {
-                // Navigate to SetScreen when this button is clicked
+                // Navigate to Quiz Set screen with 'Flutter' as subject
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SetScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => QuizSetScreen(subjectName: 'Flutter'),
+                  ),
                 );
               },
             ),
-
-            // Python Button
             SkillButton(
-              icon: Image.asset(
-                python,
-                height: 100.0,
-                width: 100.0,
-              ),
               label: 'Python',
-              onTap: () {},
+              onTap: () {
+                // Navigate to Quiz Set screen with 'Python' as subject
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizSetScreen(subjectName: 'Python'),
+                  ),
+                );
+              },
             ),
-
-            // PHP Button
             SkillButton(
-              icon: Image.asset(
-                php,
-                height: 100.0,
-                width: 100.0,
-              ),
-              label: 'PHP',
-              onTap: () {},
-            ),
-
-            // Android Button
-            SkillButton(
-              icon: Image.asset(
-                android,
-                height: 100.0,
-                width: 100.0,
-              ),
               label: 'Android',
-              onTap: () {},
+              onTap: () {
+                // Navigate to Quiz Set screen with 'Python' as subject
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizSetScreen(subjectName: 'Android'),
+                  ),
+                );
+              },
+            ),SkillButton(
+              label: 'PHP',
+              onTap: () {
+                // Navigate to Quiz Set screen with 'Python' as subject
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizSetScreen(subjectName: 'PHP'),
+                  ),
+                );
+              },
             ),
+            // Add more subjects here as needed
           ],
         ),
       ),
@@ -94,15 +99,10 @@ class DashboardScreen extends StatelessWidget {
 
 // Reusable Skill Button Widget
 class SkillButton extends StatelessWidget {
-  final Widget icon;
   final String label;
   final Function onTap;
 
-  const SkillButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const SkillButton({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +125,7 @@ class SkillButton extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              icon,
+              Icon(Icons.book, size: 60), // Placeholder icon
               const SizedBox(height: 10.0),
               Text(
                 label,

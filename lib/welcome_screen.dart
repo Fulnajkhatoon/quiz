@@ -1,8 +1,5 @@
-import 'dart:js';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:quiz/home_screen.dart';
 import 'package:quiz/image.dart';
 
@@ -19,7 +16,6 @@ class WelcomeScreen extends StatelessWidget {
             Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height / 1.6,
-              decoration: const BoxDecoration(color: Colors.white),
             ),
             Container(
               width: MediaQuery.of(context).size.width,
@@ -28,19 +24,19 @@ class WelcomeScreen extends StatelessWidget {
                 gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    //home top page colors
+                    // New background colors for a quiz app theme
                     colors: [
-                      const Color.fromARGB(201, 158, 158, 158),
-                      const Color.fromARGB(255, 240, 219, 218),
+                      Color.fromARGB(255, 255, 177, 177),
+                      Color.fromARGB(255, 240, 120, 120),
                     ]),
                 borderRadius:
                     BorderRadius.only(bottomRight: Radius.circular(70)),
               ),
               child: Center(
-                  //home page book image
+                  // Adjusting image scale for a medium size
                   child: Image.asset(
                 book,
-                scale: 0.8,
+                scale: 1.2, // Medium size
               )),
             ),
           ],
@@ -54,12 +50,11 @@ class WelcomeScreen extends StatelessWidget {
               gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  //botom top page colors
+                  // Adjust bottom page colors to match the quiz theme
                   colors: [
-                    const Color.fromARGB(201, 158, 158, 158),
-                    const Color.fromARGB(255, 240, 219, 218),
+                    Color.fromARGB(255, 240, 120, 120),
+                    Color.fromARGB(255, 255, 177, 177),
                   ]),
-              // borderRadius: BorderRadius.only(bottomRight: Radius.circular(70)),
             ),
           ),
         ),
@@ -71,7 +66,6 @@ class WelcomeScreen extends StatelessWidget {
             padding: const EdgeInsets.only(top: 30, bottom: 30),
             decoration: const BoxDecoration(
                 color: Colors.white,
-                //white curve in bottom
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(100))),
             child: Column(
               children: [
@@ -86,21 +80,21 @@ class WelcomeScreen extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 40),
                   child: Text(
-                    "Learning with pleassure with dear proggramer , wherever you are!!",
+                    "Learning with pleasure with dear programmer, wherever you are!!",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 17, color: Colors.black87),
                   ),
                 ),
-                //symmetric means equally pading from both top and bottom side
                 Container(
                   margin: const EdgeInsets.only(top: 20),
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 80),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 80),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     gradient: const LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        //botom top page colors
+                        // Button color gradient
                         colors: [Colors.purple, Colors.indigo]),
                   ),
                   child: InkWell(

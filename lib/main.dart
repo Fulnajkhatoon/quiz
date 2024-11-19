@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiz/welcome_screen.dart';
 
-void main() {
+void main() async {
   runApp(const MainApp());
 }
 

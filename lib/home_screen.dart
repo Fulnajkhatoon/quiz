@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quiz/login_screen.dart'; // Replace 'your_app' with your app's name
+import 'package:quiz/login_screen.dart'; //
 
 class HomeScreen extends StatelessWidget {
   @override

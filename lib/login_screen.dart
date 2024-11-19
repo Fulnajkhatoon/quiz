@@ -1,7 +1,10 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:quiz/dashboard.dart';
-import 'package:quiz/regi_screen.dart';
+import 'package:quiz/modules/loginrequest.dart';
+import 'package:quiz/regi_screen.dart'; // Import the file where logInUser is defined
+import 'package:quiz/sevices/loginsenddata.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -11,11 +14,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Controllers to capture the input values
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // error Message dilouge box design learn from youtube
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -24,9 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close the dialog
-            },
+            onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
           ),
         ],
@@ -43,9 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
           title: const Text('Login'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context); // Navigate back
-            },
+            onPressed: () => Navigator.pop(context),
           ),
         ),
         backgroundColor: Colors.grey[200],
@@ -60,22 +57,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 50),
                   const Text(
                     'Sign-In',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 80),
-                  // EMAIL Field
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         'EMAIL',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 10),
                       CustomTextField(
@@ -85,16 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // PASSWORD Field
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         'PASSWORD',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 10),
                       CustomTextField(
@@ -104,57 +92,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgetPasswordScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'Forgot password?',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
-                      // if email is abc and password also abc it can be login
-                      // logic for login
-                      if (_emailController.text == 'abc' &&
-                          _passwordController.text == 'abc') {
-                        // Navigate to Dashboard if login is successful
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const DashboardScreen(),
-                          ),
-                        );
-                      } else {
-                        // Show error dialog if the credentials do not match
-                        _showErrorDialog(
-                          'Username and password do not match.',
-                        );
-                      }
+                      LoginRequest loginRequest = LoginRequest(
+                        email: _emailController.text,
+                        password: _passwordController.text,
+                      );
+                      logInUser(loginRequest,
+                          context); // Call the function to log in the user
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 100,
-                        vertical: 15,
-                      ),
+                          horizontal: 100, vertical: 15),
                       textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     child: const Text('Login'),
                   ),
@@ -164,15 +116,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const RegisterScreen(),
+                          builder: (context) => RegisterScreen(),
                         ),
                       );
                     },
                     child: const Text(
                       "Don't have an account? Sign up.",
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ],
@@ -219,26 +169,8 @@ class CustomTextField extends StatelessWidget {
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Colors.grey,
-          ),
+          hintStyle: const TextStyle(color: Colors.grey),
         ),
-      ),
-    );
-  }
-}
-
-class ForgetPasswordScreen extends StatelessWidget {
-  const ForgetPasswordScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forget Password'),
-      ),
-      body: const Center(
-        child: Text('Welcome to Forget Password Screen'),
       ),
     );
   }

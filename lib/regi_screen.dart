@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:quiz/modules/regformdata.dart';
+import 'package:quiz/sevices/regsenddata.dart';
+import 'package:http/http.dart' as http;
 import 'package:quiz/login_screen.dart';
 
-// this validation learn from youtube video
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
 
@@ -18,20 +21,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TextEditingController();
   final TextEditingController _mobileNoController = TextEditingController();
   final TextEditingController _universityController = TextEditingController();
-// this both field for password visiblity icon visible or not
+
   bool _obscureText = true;
   bool _obscureConfirmPassword = true;
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _mobileNoController.dispose();
-    _universityController.dispose();
-    super.dispose();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment
-                  .stretch, // Aligns all fields to take full width
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
                 TextFormField(
@@ -175,32 +168,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 30),
                 SizedBox(
-                  width: double.infinity, // Make the button full width
+                  width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
+                      Quotes newUser = Quotes(
+                        username: _nameController.text,
+                        email: _emailController.text,
+                        mobileno: _mobileNoController.text,
+                        university: _universityController.text,
+                        password: _passwordController.text,
                       );
+
+                      registerUser(newUser,
+                          context); // Call the function to register the user
                     },
                     child: const Text('Sign Up'),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Already have an account?'),
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to the login screen
-                        // Navigator.pushNamed(context, '/login');
-                      },
-                      child: const Text('Sign In'),
-                    ),
-                  ],
                 ),
               ],
             ),

@@ -1,97 +1,137 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:quiz/question.dart';
+import 'package:http/http.dart' as http; // Import the QuestionScreen
 
-class SetScreen extends StatelessWidget {
-  const SetScreen({super.key});
+class QuizSetScreen extends StatefulWidget {
+  final String subjectName;
+
+  const QuizSetScreen({Key? key, required this.subjectName}) : super(key: key);
+
+  @override
+  _QuizSetScreenState createState() => _QuizSetScreenState();
+}
+
+class _QuizSetScreenState extends State<QuizSetScreen> {
+  List<dynamic> quizSets = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchQuizSets(widget.subjectName);
+  }
+
+  Future<void> fetchQuizSets(String subjectName) async {
+    const String apiUrl = 'http://192.168.32.182:3000/quizsets'; // API endpoint
+
+    try {
+      final response = await http.get(
+        Uri.parse('$apiUrl/$subjectName'), // Subject name in the URL path
+      );
+
+      print("API Response Status: ${response.statusCode}");
+      print("API Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> quizSetsData = json.decode(response.body);
+        setState(() {
+          quizSets = quizSetsData;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to fetch quiz sets")),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print("Error fetching quiz sets: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // Go back to the previous screen
-          },
+        backgroundColor: Colors.deepPurple,
+        title: Text(
+          '${widget.subjectName} Quiz Sets',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        title: const Center(
-          child: Text(
-            'Flutter Quiz Set',
-            style: TextStyle(color: Colors.black),
-          ),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.person, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Quiz Set 1 Button
-            QuizSetButton(
-              label: 'Quiz Set 1',
-              onTap: () {
-                // Navigate to QuestionScreen when Quiz Set 1 is tapped
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const QuestionScreen(),
+      body: isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+              ),
+            )
+          : quizSets.isEmpty
+              ? Center(
+                  child: Text(
+                    'No quiz sets available',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 20.0), // Spacing between buttons
-            // Quiz Set 2 Button
-            QuizSetButton(
-              label: 'Quiz Set 2',
-              onTap: () {
-                // Add navigation or other actions for Quiz Set 2 here
-              },
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: const Color(0xFFF2F2F2), // Light grey background color
+                )
+              : ListView.builder(
+                  padding: EdgeInsets.all(10),
+                  itemCount: quizSets.length,
+                  itemBuilder: (context, index) {
+                    final quizSet = quizSets[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Card(
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          leading: Icon(
+                            Icons.quiz,
+                            color: Colors.deepPurple,
+                            size: 30,
+                          ),
+                          title: Text(
+                            quizSet['setname'] ?? 'Unnamed Set',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Tap to start the quiz',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          onTap: () {
+                            // Pass the setId to the QuestionScreen
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => QuestionScreen(
+                                  setid: quizSet['setid'],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
-
-class QuizSetButton extends StatelessWidget {
-  final String label;
-  final Function onTap;
-
-  const QuizSetButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onTap(),
-      child: Container(
-        height: 60.0, // Adjust the height as per your design
-        width: double.infinity, // Makes the button stretch horizontally
-        decoration: BoxDecoration(
-          color: const Color(0xFFDCDCDC), // Grey button background
-          borderRadius: BorderRadius.circular(30.0), // Rounded corners
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 18.0, // Font size of the button label
-              color: Colors.black, // Text color
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Create the QuestionScreen page
